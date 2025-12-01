@@ -4,6 +4,9 @@ import { Catalog } from "./components/Models/Catalog";
 import { Cart } from "./components/Models/Cart";
 import { Buyer } from "./components/Models/Buyer";
 import { apiProducts } from "./utils/data";
+import { ApiClient } from "./components/Communication/ApiClient";
+import { Api } from "./components/base/Api";
+import { API_URL } from "./utils/constants";
 
 // Catalog
 console.log("Тестируем каталог");
@@ -77,7 +80,7 @@ const errors1 = buyer.validate();
 console.log("Ошибки валидации:", errors1);
 
 console.log("Заполняем остальные данные");
-buyer.setField("payment", "card");
+buyer.setField("payment", "online");
 buyer.setField("address", "Москва, ул. Прянишникова, д. 2");
 console.log("Данные покупателя (полностью заполненые):", buyer.getData());
 
@@ -88,3 +91,31 @@ console.log("Ошибки валидации после полного запо�
 console.log("Очищаем данные покупателя");
 buyer.clear();
 console.log("Данные покупателя после очистки:", buyer.getData());
+
+// API
+async function testApiClient() {
+  console.log("\nТестируем ApiClient");
+
+  const api = new Api(API_URL);
+
+  const apiClient = new ApiClient(api);
+  const catalog = new Catalog();
+
+  try {
+    console.log("Получаем товары с сервера");
+    const products = await apiClient.getProductList();
+
+    catalog.setProducts(products);
+    console.log(`Получено товаров с сервера: ${products.length}`);
+
+    // для проверки
+    console.log("Первые 3 товара:");
+    products.slice(0, 3).forEach((product, index) => {
+      console.log(`${index + 1}. ${product.title} - ${product.price}`);
+    });
+  } catch (error) {
+    console.error("Ошибка при работе с API:", error);
+  }
+}
+
+testApiClient();

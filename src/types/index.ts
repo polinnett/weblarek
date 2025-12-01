@@ -9,7 +9,7 @@ export interface IApi {
   ): Promise<T>;
 }
 
-export type TPayment = "card" | "cash" | "";
+export type TPayment = "online" | "cash" | "";
 
 export interface IProduct {
   id: string;
@@ -25,4 +25,18 @@ export interface IBuyer {
   email: string;
   phone: string;
   address: string;
+}
+export interface IProductListResponse {
+  total: number;
+  items: IProduct[];
+}
+
+export interface IOrderData extends IBuyer {
+  total: number;
+  items: string[];
+}
+
+export interface IOrderResult {
+  id: string;
+  total: number;
 }

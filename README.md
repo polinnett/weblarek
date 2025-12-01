@@ -133,7 +133,7 @@ Presenter - презентер содержит основную логику п
     address: string;
 }`
 
-Где: `type TPayment = 'card' | 'cash' | '';`
+Где: `type TPayment = 'online' | 'cash' | '';`
 
 Интерфейс определяет данные покупателя, необходимые для оформления заказа.
 
@@ -203,3 +203,13 @@ Presenter - презентер содержит основную логику п
     payment: 'Не выбран вид оплаты',
     email: 'Укажите email',
 }`
+
+#### Слой коммуникации
+
+Класс ApiClient отвечает за взаимодействие с сервером.
+
+Конструктор: `constructor(api: IApi)` - принимает объект, реализующий интерфейс IApi.
+
+Методы класса:
+`getProductList(): Promise<IProduct[]>` - выполняет GET-запрос к эндпоинту /product и возвращает массив товаров
+`createOrder(orderData: IOrderData): Promise<IOrderResult>`- выполняет POST-запрос к эндпоинту /order и отправляет данные заказа

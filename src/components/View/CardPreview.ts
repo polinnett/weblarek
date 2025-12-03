@@ -43,6 +43,13 @@ export class CardPreview extends Card<IProduct> {
   set inBasket(flag: boolean) {
     if (!this.buttonElement) return;
 
+    if (this._price === null) {
+      this.buttonDisabled = true;
+      this.buttonTitle = "Недоступно";
+      this.buttonElement.classList.remove("card__button_remove");
+      return;
+    }
+
     if (flag) {
       this.buttonElement.textContent = "Удалить из корзины";
       this.buttonElement.classList.add("card__button_remove");
@@ -54,8 +61,14 @@ export class CardPreview extends Card<IProduct> {
 
   set price(value: number | null) {
     super.price = value;
-    this.priceElement.textContent =
-      value === null ? "Недоступно" : `${value} синапсов`;
+
+    if (value === null) {
+      this.priceElement.textContent = "Бесценно";
+    } else {
+      this.priceElement.textContent = `${value} sинапсов`;
+      this.buttonDisabled = false;
+      this.buttonTitle = this.inBasket ? "Удалить из корзины" : "Купить";
+    }
   }
 
   render(product: IProduct): HTMLElement {

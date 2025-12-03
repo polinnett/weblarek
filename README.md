@@ -213,3 +213,218 @@ Presenter - презентер содержит основную логику п
 Методы класса:
 `getProductList(): Promise<IProduct[]>` - выполняет GET-запрос к эндпоинту /product и возвращает массив товаров
 `createOrder(orderData: IOrderData): Promise<IOrderResult>`- выполняет POST-запрос к эндпоинту /order и отправляет данные заказа
+
+### Слой предстваления
+
+#### Header
+
+Компонент отвечает за отображение шапки сайта: счетчика корзины и кнопки открытия корзины.
+
+Конструктор: `constructor(events: IEvents, container: HTMLElement)`
+
+Поля класса:
+`counterElement: HTMLElement` – DOM-элемент, отображающий количество товаров.
+`basketButton: HTMLButtonElement` – кнопка открытия корзины.
+`events: IEvents` – объект событийной модели.
+
+Методы класса:
+`set counter(value: number): void` – отрисовывает количество товаров в корзине.
+
+Генерируемые события:
+`basket:open` – при клике на кнопку корзины.
+
+#### Gallery (каталог товаров)
+
+Компонент отвечает за отображение списка карточек каталога на главной странице.
+
+Конструктор: `constructor(container: HTMLElement)`
+
+Поля:
+`catalogElement: HTMLElement` – контейнер, в который выводятся карточки товаров.
+
+Методы:
+`set catalog(items: HTMLElement[]): void` – заменяет содержимое каталога на переданный массив DOM-элементов.
+
+#### Card<T> (абстрактная карточка товара)
+
+Родительский класс для всех типов карточек. Содержит общий для карточек функционал: работу с заголовком, ценой и кнопкой.
+
+Конструктор: `constructor(container: HTMLElement, actions?: ICardActions)`
+
+Поля:
+`titleElement: HTMLElement` – элемент, отображающий название товара.
+`priceElement: HTMLElement` – элемент, отображающий цену товара.
+`buttonElement?: HTMLButtonElement` – кнопка карточки (если есть).
+`actions?: ICardActions` – объект обработчиков событий.
+
+Методы:
+`set title(value: string): void` – устанавливает название товара.
+`set price(value: string): void` – устанавливает цену.
+`set buttonTitle(value: string): void` – изменяет текст кнопки.
+`set buttonDisabled(flag: boolean): void` – включает/отключает кнопку.
+`render(data: Partial<T>): HTMLElement` – обновляет карточку через сеттеры и возвращает DOM-элемент. Используется для рендеринга во всех местах отображения.
+
+Генерируемые события (через actions, вызываются презентером):
+`card:select` – при клике по карточке.
+`card:buy` – при клике по кнопке «Купить».
+`card:remove`– при клике по кнопке удаления товара.
+
+#### CardCatalog (карточка в каталоге)
+
+Компонент отображает товар в общем каталоге.
+
+Конструктор: `constructor(container: HTMLElement, actions?: ICardActions)`
+
+Поля:
+`categoryElement: HTMLElement` – DOM-элемент для отображения категории товара.
+`imageElement: HTMLImageElement` – изображение товара.
+
+Методы:
+`set category(value: string): void` – устанавливает категорию товара и соответствующие CSS-классы.
+`set image(value: string): void` – устанавливает изображение товара в карточке каталога.
+
+Генерируемые события (через actions, вызываются презентером): `card:select` – по клику на карточку.
+
+#### CardPreview (карточка товара в модальном окне)
+
+Компонент отображает подробную информацию о товаре.
+
+Конструктор: `constructor(container: HTMLElement, actions?: ICardActions)`
+
+Поля:
+`categoryElement: HTMLElement` – DOM-элемент для отображения категории товара.
+`imageElement: HTMLImageElement` – изображение товара.
+`descriptionElement: HTMLElement` – описание товара.
+
+Методы:
+`set category(value: string): void` – устанавливает категорию товара и соответствующие CSS-классы.
+`set image(value: string): void` – устанавливает изображение товара в модальном окне.
+`set description(value: string): void` – устанавливает описание товара.
+`set inBasket(flag: boolean): void` – меняет состояние кнопки («Купить» / «Удалить из корзины»).
+
+Генерируемые события (через actions, вызываются презентером):
+`card:buy` – при клике по кнопке «Купить» в модальном окне.
+`card:remove`– при клике по кнопке «Удалить из корзины» в модальном окне.
+
+#### CardBasket (карточка товара в корзине)
+
+Компонент отображает товар внутри корзины.
+
+Конструктор: `constructor(container: HTMLElement, actions?: ICardActions)`
+
+Поля:
+`deleteButton: HTMLButtonElement` – кнопка удаления товара из корзины.
+
+Методы: наследуется от родителя Card<T>.
+
+Генерируемые события (через actions, вызываются презентером):
+`basket:remove` – по клику на кнопку удаления.
+
+#### Modal
+
+Компонент отвечает за универсальное модальное окно, в котором отображаются другие компоненты. От него нельзя наследоваться.
+
+Конструктор: `constructor(events: IEvents, container: HTMLElement)`
+
+Поля:
+`contentElement: HTMLElement` – область, в которую помещается контент модального окна.
+`closeButton: HTMLButtonElement` – кнопка закрытия модального окна.
+`events: IEvents` – объект событийной модели.
+
+Методы:
+`open(content: HTMLElement): void` – открывает модальное окно с указанным контентом.
+`close(): void` – закрывает модальное окно.
+
+Генерируемые события (через events):
+`modal:close` – при клике на крестик или на фон.
+
+#### Form<T> (абстрактная форма)
+
+Родительский компонент для всех форм оформления заказа.
+
+Конструктор: `constructor(events: IEvents, container: HTMLElement)`
+
+Поля:
+`submitButton: HTMLButtonElement` – кнопка отправки формы.
+`errorElement: HTMLElement`– DOM-элемент для отображения ошибок.
+`events: IEvents` – объект событийной модели.
+
+Методы:
+`set valid(flag: boolean): void` – включает или отключает кнопку отправки.
+`set errors(list: string[]): void` – отображает список ошибок.
+`serialize(): T` – собирает и возвращает данные формы.
+
+События (через events):
+`form:submit` – отправка формы.
+`form:change` – при изменении любого поля.
+
+#### FormOrder (форма выбора оплаты и адреса)
+
+Первый шаг оформления заказа — выбор способа оплаты и ввод адреса доставки.
+
+Конструктор: `constructor(events: IEvents, container: HTMLElement)`
+
+Поля:
+`paymentElement: HTMLElement` – группа элементов для выбора способа оплаты.
+`addressElement: HTMLInputElement` – поле для ввода адреса доставки.
+
+Методы:
+`set payment(value: string): void` – устанавливает выбранный способ оплаты в DOM.
+`set address(value: string): void` – устанавливает значение поля адреса.
+
+Генерируемые события (через events):
+`order:next` – при нажатии кнопки «Далее» после успешной валидации.
+
+#### FormContacts (форма с контактами)
+
+Второй шаг оформления заказа – ввод контактных данных покупателя.
+
+Конструктор: `constructor(events: IEvents, container: HTMLElement)`
+
+Поля:
+`emailElement: HTMLInputElement` — поле для ввода email-адреса.
+`phoneElement: HTMLInputElement` — поле для ввода номера телефона.
+
+Методы:
+`set email(value: string): void` — устанавливает значение email в соответствующее поле ввода.
+`set phone(value: string): void` — устанавливает номер телефона в DOM.
+
+Генерируемые события (через events):
+`order:submit` — при нажатии кнопки «Оплатить», если форма успешно прошла валидацию.
+
+#### Basket
+
+Компонент отображает товары корзины и итоговую сумму.
+
+Конструктор: `constructor(events: IEvents, container: HTMLElement)`
+
+Поля:
+`listElement: HTMLElement` – контейнер списка товаров.
+`totalElement: HTMLElement` – отображает итоговую сумму.
+`buttonElement: HTMLButtonElement` – кнопка оформления заказа.
+`events: IEvents` – объект событийной модели.
+
+Методы:
+`set items(value: HTMLElement[]): void` – отрисовывает товары.
+`set total(value: number): void` – устанавливает итоговую цену.
+`set empty(flag: boolean): void` – переключает сообщение «Корзина пуста».
+
+Генерируемые события (через events):
+`basket:checkout` – при нажатии на кнопку «Оформить».
+
+#### Success (сообщение об успешной оплате)
+
+Компонент отображает сообщение о завершении покупки.
+
+Конструктор: `constructor(events: IEvents, container: HTMLElement)`
+
+Поля:
+`descriptionElement: HTMLElement` – текст с суммой списанных синапсов.  
+`buttonElement: HTMLButtonElement` – кнопка «За новыми покупками!».  
+`events: IEvents` – объект событийной модели.
+
+Методы:
+`set total(value: number): void` – подставляет итоговую сумму в текст сообщения.
+
+Генерируемые события (через events):
+`success:close` – по клику на кнопку «За новыми покупками!».

@@ -164,10 +164,7 @@ events.on("catalog:changed", () => {
     const card = new CardCatalog(
       template.content.firstElementChild!.cloneNode(true) as HTMLElement,
       {
-        onSelect: (id) => {
-          console.log("card:select emitted", id);
-          events.emit("card:select", { id });
-        },
+        onSelect: (id) => events.emit("card:select", { id }),
       }
     );
 
@@ -237,11 +234,11 @@ events.on<{
 }>("cart:changed", ({ items, total, count }) => {
   header.counter = count;
 
-  const basketEl = modalContainer.querySelector<HTMLElement>("#basket");
+  const basketEl = modalContainer.querySelector<HTMLElement>(".basket");
   if (basketEl) {
     const basket = new Basket(events, basketEl);
 
-    const cards = items.map((product) => {
+    const cards = items.map((product, index) => {
       const template = document.getElementById(
         "card-basket"
       ) as HTMLTemplateElement;
@@ -253,7 +250,10 @@ events.on<{
         }
       );
 
-      return card.render(product);
+      const rendered = card.render(product);
+      card.index = index + 1;
+
+      return rendered;
     });
 
     basket.items = cards;
@@ -275,7 +275,7 @@ events.on("basket:open", () => {
   const basket = new Basket(events, basketNode);
 
   const items = cart.getItems();
-  const cards = items.map((product) => {
+  const cards = items.map((product, index) => {
     const itemTemplate = document.getElementById(
       "card-basket"
     ) as HTMLTemplateElement;
@@ -287,7 +287,10 @@ events.on("basket:open", () => {
       }
     );
 
-    return card.render(product);
+    const rendered = card.render(product);
+    card.index = index + 1;
+
+    return rendered;
   });
 
   basket.items = cards;

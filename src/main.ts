@@ -16,6 +16,10 @@ import { CardBasket } from "./components/View/CardBasket";
 import { Modal } from "./components/View/Modal";
 import type { IProduct } from "./types";
 import { Basket } from "./components/View/Basket";
+import { Form } from "./components/View/Form";
+import { FormOrder } from "./components/View/FormOrder";
+import { FormContacts } from "./components/View/FormContacts";
+import { Success } from "./components/View/Success";
 
 // Catalog
 // console.log("Тестируем каталог");
@@ -146,6 +150,9 @@ const header = new Header(events, pageHeader!);
 const gallery = new Gallery(pageMain!);
 const modal = new Modal(events, modalContainer!);
 
+let currentPreview: CardPreview | null = null;
+let currentPreviewProductId: string | null = null;
+
 events.on("catalog:changed", () => {
   const products = catalog.getProducts();
 
@@ -157,8 +164,10 @@ events.on("catalog:changed", () => {
     const card = new CardCatalog(
       template.content.firstElementChild!.cloneNode(true) as HTMLElement,
       {
-        onSelect: (id) => events.emit("card:select", { id }),
-        onBuy: (id) => events.emit("card:buy", { id }),
+        onSelect: (id) => {
+          console.log("card:select emitted", id);
+          events.emit("card:select", { id });
+        },
       }
     );
 
@@ -173,7 +182,7 @@ events.on<{ product: IProduct }>("catalog:select", ({ product }) => {
     "card-preview"
   ) as HTMLTemplateElement;
 
-  const card = new CardPreview(
+  currentPreview = new CardPreview(
     template.content.firstElementChild!.cloneNode(true) as HTMLElement,
     {
       onBuy: (id) => events.emit("card:buy", { id }),
@@ -181,16 +190,11 @@ events.on<{ product: IProduct }>("catalog:select", ({ product }) => {
     }
   );
 
-  const rendered = card.render({
-    id: product.id,
-    title: product.title,
-    category: product.category,
-    price: product.price,
-    description: product.description,
-    image: product.image,
-  });
+  const rendered = currentPreview.render(product);
 
-  card.inBasket = cart.hasItem(product.id);
+  currentPreviewProductId = product.id;
+
+  currentPreview.inBasket = cart.hasItem(product.id);
 
   modal.open(rendered);
 });
@@ -240,6 +244,10 @@ events.on<{
     basket.total = total;
     basket.empty = items.length === 0;
   }
+
+  if (currentPreview && currentPreviewProductId) {
+    currentPreview.inBasket = cart.hasItem(currentPreviewProductId);
+  }
 });
 
 events.on("basket:open", () => {
@@ -271,6 +279,63 @@ events.on("basket:open", () => {
   basket.empty = items.length === 0;
 
   modal.open(basketNode);
+});
+
+events.on("basket:checkout", () => {
+  const template = document.getElementById("order") as HTMLTemplateElement;
+  const orderNode = template.content.firstElementChild!.cloneNode(
+    true
+  ) as HTMLElement;
+
+  const orderForm = new FormOrder(events, orderNode);
+
+  const data = buyer.getData();
+
+  orderForm.address = data.address;
+  orderForm.payment = data.payment;
+
+  modal.open(orderNode);
+});
+
+events.on("form:change", () => {
+  const form = modalContainer.querySelector("form");
+  if (!form) return;
+
+  if (form.name === "order") {
+    const orderForm = new FormOrder(events, form);
+    const data = orderForm.serialize();
+
+    buyer.setField("payment", data.payment);
+    buyer.setField("address", data.address);
+  }
+
+  if (form.name === "contacts") {
+    const contactsForm = new FormContacts(events, form);
+    const data = contactsForm.serialize();
+
+    buyer.setField("email", data.email);
+    buyer.setField("phone", data.phone);
+  }
+});
+
+events.on("buyer:changed", () => {
+  const form = modalContainer.querySelector("form");
+  if (!form) return;
+
+  const errors = buyer.validate();
+  const isValid = Object.keys(errors).length === 0;
+
+  if (form.name === "order") {
+    const orderForm = new FormOrder(events, form);
+    orderForm.valid = !errors.payment && !errors.address;
+    orderForm.errors = Object.values(errors);
+  }
+
+  if (form.name === "contacts") {
+    const contactsForm = new FormContacts(events, form);
+    contactsForm.valid = !errors.email && !errors.phone;
+    contactsForm.errors = Object.values(errors);
+  }
 });
 
 apiClient.getProductList().then((products) => catalog.setProducts(products));

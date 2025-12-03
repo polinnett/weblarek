@@ -57,4 +57,16 @@ export class CardPreview extends Card<IProduct> {
     this.priceElement.textContent =
       value === null ? "Недоступно" : `${value} синапсов`;
   }
+
+  render(product: IProduct): HTMLElement {
+    this.container.dataset.id = product.id;
+
+    this.title = product.title;
+    this.category = product.category;
+    this.price = product.price;
+    this.image = product.image;
+    this.description = product.description;
+
+    return this.container;
+  }
 }

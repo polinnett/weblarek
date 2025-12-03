@@ -1,4 +1,5 @@
 import { IBuyer, TPayment } from "../../types";
+import type { IEvents } from "../base/Events";
 
 export class Buyer {
   private payment: TPayment = "";
@@ -6,7 +7,7 @@ export class Buyer {
   private phone: string = "";
   private email: string = "";
 
-  constructor() {}
+  constructor(private events: IEvents) {}
 
   setField<K extends keyof IBuyer>(field: K, value: IBuyer[K]): void {
     switch (field) {
@@ -23,6 +24,8 @@ export class Buyer {
         this.email = value as string;
         break;
     }
+
+    this.events.emit("buyer:changed", this.getData());
   }
 
   getData(): IBuyer {
@@ -39,6 +42,8 @@ export class Buyer {
     this.address = "";
     this.phone = "";
     this.email = "";
+
+    this.events.emit("buyer:changed", this.getData());
   }
 
   validate(): Partial<Record<keyof IBuyer, string>> {

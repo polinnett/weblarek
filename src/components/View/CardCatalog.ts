@@ -40,4 +40,15 @@ export class CardCatalog extends Card<IProduct> {
     this.priceElement.textContent =
       value === null ? "Бесценно" : `${value} синапсов`;
   }
+
+  render(product: IProduct): HTMLElement {
+    this.container.dataset.id = product.id;
+
+    this.title = product.title;
+    this.category = product.category;
+    this.price = product.price;
+    this.image = product.image;
+
+    return this.container;
+  }
 }

@@ -65,7 +65,7 @@ export class CardPreview extends Card<IProduct> {
     if (value === null) {
       this.priceElement.textContent = "Бесценно";
     } else {
-      this.priceElement.textContent = `${value} sинапсов`;
+      this.priceElement.textContent = `${value} синапсов`;
       this.buttonDisabled = false;
       this.buttonTitle = this.inBasket ? "Удалить из корзины" : "Купить";
     }

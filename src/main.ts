@@ -206,12 +206,28 @@ events.on<{ id: string }>("card:select", ({ id }) => {
 
 events.on<{ id: string }>("card:buy", ({ id }) => {
   const product = catalog.getProductById(id);
-  if (product) cart.addItem(product);
+  if (product) {
+    cart.addItem(product);
+  }
+
+  if (currentPreviewProductId === id) {
+    modal.close();
+    currentPreview = null;
+    currentPreviewProductId = null;
+  }
 });
 
 events.on<{ id: string }>("card:remove", ({ id }) => {
   const product = catalog.getProductById(id);
-  if (product) cart.removeItem(product);
+  if (product) {
+    cart.removeItem(product);
+  }
+
+  if (currentPreviewProductId === id) {
+    modal.close();
+    currentPreview = null;
+    currentPreviewProductId = null;
+  }
 });
 
 events.on<{

@@ -1,8 +1,7 @@
 import { Form } from "./Form";
 import { ensureElement, ensureAllElements } from "../../utils/utils";
 import type { IEvents } from "../base/Events";
-import type { IFormOrder } from "../../types/view";
-import type { TPayment } from "../../types";
+import type { TPayment, IFormOrder } from "../../types";
 
 export class FormOrder extends Form<IFormOrder> {
   protected paymentButtons: HTMLButtonElement[];

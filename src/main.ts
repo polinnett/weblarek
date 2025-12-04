@@ -14,13 +14,12 @@ import { CardCatalog } from "./components/View/CardCatalog";
 import { CardPreview } from "./components/View/CardPreview";
 import { CardBasket } from "./components/View/CardBasket";
 import { Modal } from "./components/View/Modal";
-import type { IProduct, IOrderData } from "./types/index";
+import type { IProduct, IOrderData, IFormOrder, IFormContacts } from "./types";
 import { Basket } from "./components/View/Basket";
 import { Form } from "./components/View/Form";
 import { FormOrder } from "./components/View/FormOrder";
 import { FormContacts } from "./components/View/FormContacts";
 import { Success } from "./components/View/Success";
-import { IFormOrder, IFormContacts } from "./types/view";
 
 // Catalog
 // console.log("Тестируем каталог");

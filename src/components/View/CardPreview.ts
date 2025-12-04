@@ -1,7 +1,6 @@
 import { Card } from "./Card";
 import { ensureElement } from "../../utils/utils";
-import type { ICardActions } from "../../types/view";
-import type { IProduct } from "../../types";
+import type { IProduct, ICardActions } from "../../types";
 import { categoryMap, CDN_URL } from "../../utils/constants";
 
 export class CardPreview extends Card<IProduct> {

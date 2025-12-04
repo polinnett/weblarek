@@ -1,7 +1,6 @@
 import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
-import { ICardActions } from "../../types/view";
-import type { IProduct } from "../../types";
+import type { IProduct, ICardActions } from "../../types";
 
 export abstract class Card<T extends IProduct> extends Component<T> {
   protected _price: number | null = null;

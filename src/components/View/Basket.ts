@@ -10,11 +10,11 @@ export class Basket extends Component<{}> {
   constructor(protected events: IEvents, container: HTMLElement) {
     super(container);
 
-    this.listElement = ensureElement(".basket__list", container);
-    this.totalElement = ensureElement(".basket__price", container);
+    this.listElement = ensureElement(".basket__list", this.container);
+    this.totalElement = ensureElement(".basket__price", this.container);
     this.buttonElement = ensureElement<HTMLButtonElement>(
       ".basket__button",
-      container
+      this.container
     );
 
     this.buttonElement.addEventListener("click", () => {
@@ -31,7 +31,6 @@ export class Basket extends Component<{}> {
   }
 
   set empty(flag: boolean) {
-    this.container.classList.toggle("basket_empty", flag);
     this.buttonElement.disabled = flag;
   }
 }

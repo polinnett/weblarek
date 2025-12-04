@@ -7,19 +7,22 @@ export class CardCatalog extends Card<IProduct> {
   protected categoryElement: HTMLElement;
   protected imageElement: HTMLImageElement;
 
-  constructor(container: HTMLElement, actions?: ICardActions) {
-    super(container, actions);
+  constructor(container: HTMLElement, private actions?: ICardActions) {
+    super(container);
 
-    this.categoryElement = ensureElement(".card__category", this.container);
+    this.categoryElement = ensureElement(".card__category", container);
     this.imageElement = ensureElement<HTMLImageElement>(
       ".card__image",
-      this.container
+      container
     );
+
+    container.addEventListener("click", () => {
+      this.actions?.onSelect?.();
+    });
   }
 
   set category(value: string) {
     this.categoryElement.textContent = value;
-
     this.categoryElement.className = "card__category";
 
     const className = categoryMap[value as keyof typeof categoryMap];
@@ -31,23 +34,5 @@ export class CardCatalog extends Card<IProduct> {
   set image(value: string) {
     this.imageElement.src = `${CDN_URL}/${value}`;
     this.imageElement.alt = this.titleElement.textContent || "";
-  }
-
-  set price(value: number | null) {
-    super.price = value;
-
-    this.priceElement.textContent =
-      value === null ? "Бесценно" : `${value} синапсов`;
-  }
-
-  render(product: IProduct): HTMLElement {
-    this.container.dataset.id = product.id;
-
-    this.title = product.title;
-    this.category = product.category;
-    this.price = product.price;
-    this.image = product.image;
-
-    return this.container;
   }
 }

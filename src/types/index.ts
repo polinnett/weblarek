@@ -41,9 +41,9 @@ export interface IOrderResult {
   total: number;
 }
 export interface ICardActions {
-  onSelect?: (id: string) => void;
-  onBuy?: (id: string) => void;
-  onRemove?: (id: string) => void;
+  onSelect?: () => void;
+  onBuy?: () => void;
+  onRemove?: () => void;
 }
 
 export interface IFormOrder {

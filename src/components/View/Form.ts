@@ -11,19 +11,30 @@ export abstract class Form<T> extends Component<T> {
 
     this.submitButton = ensureElement<HTMLButtonElement>(
       "button[type=submit]",
-      container
+      this.container
     );
-    this.errorElement = ensureElement<HTMLElement>(".form__errors", container);
 
-    container.addEventListener("input", (event) => {
+    this.errorElement = ensureElement<HTMLElement>(
+      ".form__errors",
+      this.container
+    );
+
+    this.container.addEventListener("input", (event) => {
       if (event.target instanceof HTMLInputElement) {
-        this.events.emit("form:change");
+        const field = event.target.name;
+        const value = event.target.value;
+        this.events.emit("form:change", { field, value });
       }
     });
 
-    container.addEventListener("submit", (event) => {
+    this.container.addEventListener("submit", (event) => {
       event.preventDefault();
-      this.events.emit("form:submit");
+
+      const formName = this.container.getAttribute("name");
+
+      if (formName) {
+        this.events.emit(`${formName}:submit`);
+      }
     });
   }
 
@@ -34,6 +45,4 @@ export abstract class Form<T> extends Component<T> {
   set errors(list: string[]) {
     this.errorElement.innerHTML = list.join("<br>");
   }
-
-  abstract serialize(): T;
 }

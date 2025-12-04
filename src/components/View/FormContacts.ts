@@ -1,9 +1,8 @@
 import { Form } from "./Form";
 import { ensureElement } from "../../utils/utils";
 import type { IEvents } from "../base/Events";
-import type { IFormContacts } from "../../types";
 
-export class FormContacts extends Form<IFormContacts> {
+export class FormContacts extends Form<{}> {
   protected emailElement: HTMLInputElement;
   protected phoneElement: HTMLInputElement;
 
@@ -12,17 +11,12 @@ export class FormContacts extends Form<IFormContacts> {
 
     this.emailElement = ensureElement<HTMLInputElement>(
       "input[name=email]",
-      container
+      this.container
     );
     this.phoneElement = ensureElement<HTMLInputElement>(
       "input[name=phone]",
-      container
+      this.container
     );
-
-    container.addEventListener("submit", (event) => {
-      event.preventDefault();
-      this.events.emit("order:submit");
-    });
   }
 
   set email(value: string) {
@@ -31,12 +25,5 @@ export class FormContacts extends Form<IFormContacts> {
 
   set phone(value: string) {
     this.phoneElement.value = value;
-  }
-
-  serialize(): IFormContacts {
-    return {
-      email: this.emailElement.value.trim(),
-      phone: this.phoneElement.value.trim(),
-    };
   }
 }

@@ -1,9 +1,9 @@
 import { Form } from "./Form";
 import { ensureElement, ensureAllElements } from "../../utils/utils";
 import type { IEvents } from "../base/Events";
-import type { TPayment, IFormOrder } from "../../types";
+import type { TPayment } from "../../types";
 
-export class FormOrder extends Form<IFormOrder> {
+export class FormOrder extends Form<{}> {
   protected paymentButtons: HTMLButtonElement[];
   protected addressElement: HTMLInputElement;
 
@@ -12,50 +12,32 @@ export class FormOrder extends Form<IFormOrder> {
 
     this.paymentButtons = ensureAllElements<HTMLButtonElement>(
       ".button_alt",
-      container
+      this.container
     );
-
-    this.paymentButtons.forEach((btn) => {
-      if (btn.name === "card") btn.dataset.payment = "online";
-      if (btn.name === "cash") btn.dataset.payment = "cash";
-    });
 
     this.addressElement = ensureElement<HTMLInputElement>(
       "input[name=address]",
-      container
+      this.container
     );
 
     this.paymentButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
-        this.payment = btn.dataset.payment as TPayment;
+        this.events.emit("form:change", {
+          field: "payment",
+          value: btn.name as TPayment,
+        });
       });
-    });
-
-    container.addEventListener("submit", (event) => {
-      event.preventDefault();
-      this.events.emit("order:next");
     });
   }
 
   set payment(value: TPayment) {
     this.paymentButtons.forEach((btn) => {
-      const isActive = btn.dataset.payment === value;
+      const isActive = btn.name === value;
       btn.classList.toggle("button_alt-active", isActive);
     });
   }
 
   set address(value: string) {
     this.addressElement.value = value;
-  }
-
-  serialize(): IFormOrder {
-    const payment = this.paymentButtons.find((btn) =>
-      btn.classList.contains("button_alt-active")
-    )?.dataset.payment as TPayment;
-
-    return {
-      payment,
-      address: this.addressElement.value.trim(),
-    };
   }
 }

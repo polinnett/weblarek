@@ -25,7 +25,7 @@ export class CardPreview extends Card<IProduct> {
     );
 
     this.buttonElement.addEventListener("click", () => {
-      this.actions?.onBuy?.();
+      this.actions?.onClick?.();
     });
   }
 

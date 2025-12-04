@@ -42,7 +42,7 @@ export interface IOrderResult {
 }
 export interface ICardActions {
   onSelect?: () => void;
-  onBuy?: () => void;
+  onClick?: () => void;
   onRemove?: () => void;
 }
 

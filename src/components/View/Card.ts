@@ -19,6 +19,10 @@ export abstract class Card<T extends IProduct> extends Component<T> {
   }
 
   set price(value: number | null) {
-    this._price = value;
+    if (value === null) {
+      this.priceElement.textContent = "Бесценно";
+    } else {
+      this.priceElement.textContent = `${value} синапсов`;
+    }
   }
 }

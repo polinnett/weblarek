@@ -24,8 +24,6 @@ export class Buyer {
         this.email = value as string;
         break;
     }
-
-    this.events.emit("buyer:changed", this.getData());
   }
 
   getData(): IBuyer {
@@ -42,8 +40,6 @@ export class Buyer {
     this.address = "";
     this.phone = "";
     this.email = "";
-
-    this.events.emit("buyer:changed", this.getData());
   }
 
   validate(): Partial<Record<keyof IBuyer, string>> {

@@ -12,12 +12,7 @@ export class Cart {
 
   addItem(product: IProduct): void {
     this.items.push(product);
-
-    this.events.emit("cart:changed", {
-      items: this.items,
-      total: this.getTotal(),
-      count: this.getCount(),
-    });
+    this.events.emit("cart:changed");
   }
 
   removeItem(product: IProduct): void {
@@ -25,22 +20,12 @@ export class Cart {
     if (index !== -1) {
       this.items.splice(index, 1);
     }
-
-    this.events.emit("cart:changed", {
-      items: this.items,
-      total: this.getTotal(),
-      count: this.getCount(),
-    });
+    this.events.emit("cart:changed");
   }
 
   clear(): void {
     this.items = [];
-
-    this.events.emit("cart:changed", {
-      items: this.items,
-      total: this.getTotal(),
-      count: this.getCount(),
-    });
+    this.events.emit("cart:changed");
   }
 
   getTotal(): number {

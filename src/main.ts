@@ -47,6 +47,7 @@ const modal = new Modal(events, modalContainer!);
 const basketNode = cloneTemplate<HTMLElement>("#basket");
 const basket = new Basket(events, basketNode);
 
+// вспомогательные функции
 function updateBasketContent() {
   const items = cart.getItems();
 
@@ -67,6 +68,41 @@ function updateBasketContent() {
   basket.items = cards;
   basket.total = cart.getTotal();
   basket.empty = items.length === 0;
+}
+
+function updateFormUI() {
+  const modalContent = document.querySelector(".modal__content");
+  const currentForm = modalContent?.querySelector("form");
+
+  if (!currentForm) return;
+
+  const errors = buyer.validate();
+  const formName = currentForm.getAttribute("name");
+
+  if (formName === "order") {
+    const orderForm = new FormOrder(events, currentForm as HTMLElement);
+
+    const buyerData = buyer.getData();
+    orderForm.payment = buyerData.payment;
+
+    const orderErrors = [];
+    if (errors.payment) orderErrors.push(errors.payment);
+    if (errors.address) orderErrors.push(errors.address);
+
+    orderForm.errors = orderErrors;
+    orderForm.valid = orderErrors.length === 0;
+  }
+
+  if (formName === "contacts") {
+    const contactsForm = new FormContacts(events, currentForm as HTMLElement);
+
+    const contactsErrors = [];
+    if (errors.email) contactsErrors.push(errors.email);
+    if (errors.phone) contactsErrors.push(errors.phone);
+
+    contactsForm.errors = contactsErrors;
+    contactsForm.valid = contactsErrors.length === 0;
+  }
 }
 
 events.on("catalog:changed", () => {
@@ -133,11 +169,6 @@ events.on("preview:action", () => {
   modal.close();
 });
 
-events.on("basket:open", () => {
-  updateBasketContent();
-  modal.open(basket.render());
-});
-
 events.on("cart:changed", () => {
   header.counter = cart.getCount();
 
@@ -147,19 +178,14 @@ events.on("cart:changed", () => {
   }
 });
 
+events.on("basket:open", () => {
+  updateBasketContent();
+  modal.open(basket.render());
+});
+
 events.on<{ id: string }>("basket:remove", ({ id }) => {
   const product = catalog.getProductById(id);
   if (product) cart.removeItem(product);
-});
-
-events.on("order:next", () => {
-  const contactsNode = cloneTemplate<HTMLElement>("#contacts");
-  const contactsForm = new FormContacts(events, contactsNode);
-
-  contactsForm.email = "";
-  contactsForm.phone = "";
-
-  modal.open(contactsNode);
 });
 
 events.on("basket:checkout", () => {
@@ -251,41 +277,6 @@ events.on("form:change", (data: { field: string; value: string }) => {
 
   updateFormUI();
 });
-
-function updateFormUI() {
-  const modalContent = document.querySelector(".modal__content");
-  const currentForm = modalContent?.querySelector("form");
-
-  if (!currentForm) return;
-
-  const errors = buyer.validate();
-  const formName = currentForm.getAttribute("name");
-
-  if (formName === "order") {
-    const orderForm = new FormOrder(events, currentForm as HTMLElement);
-
-    const buyerData = buyer.getData();
-    orderForm.payment = buyerData.payment;
-
-    const orderErrors = [];
-    if (errors.payment) orderErrors.push(errors.payment);
-    if (errors.address) orderErrors.push(errors.address);
-
-    orderForm.errors = orderErrors;
-    orderForm.valid = orderErrors.length === 0;
-  }
-
-  if (formName === "contacts") {
-    const contactsForm = new FormContacts(events, currentForm as HTMLElement);
-
-    const contactsErrors = [];
-    if (errors.email) contactsErrors.push(errors.email);
-    if (errors.phone) contactsErrors.push(errors.phone);
-
-    contactsForm.errors = contactsErrors;
-    contactsForm.valid = contactsErrors.length === 0;
-  }
-}
 
 events.on("success:close", () => {
   modal.close();

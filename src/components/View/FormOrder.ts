@@ -15,6 +15,12 @@ export class FormOrder extends Form<IFormOrder> {
       ".button_alt",
       container
     );
+
+    this.paymentButtons.forEach((btn) => {
+      if (btn.name === "card") btn.dataset.payment = "online";
+      if (btn.name === "cash") btn.dataset.payment = "cash";
+    });
+
     this.addressElement = ensureElement<HTMLInputElement>(
       "input[name=address]",
       container

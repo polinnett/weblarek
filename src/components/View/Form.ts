@@ -15,8 +15,10 @@ export abstract class Form<T> extends Component<T> {
     );
     this.errorElement = ensureElement<HTMLElement>(".form__errors", container);
 
-    container.addEventListener("input", () => {
-      this.events.emit("form:change");
+    container.addEventListener("input", (event) => {
+      if (event.target instanceof HTMLInputElement) {
+        this.events.emit("form:change");
+      }
     });
 
     container.addEventListener("submit", (event) => {

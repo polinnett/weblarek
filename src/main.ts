@@ -13,7 +13,14 @@ import { CardCatalog } from "./components/View/CardCatalog";
 import { CardPreview } from "./components/View/CardPreview";
 import { CardBasket } from "./components/View/CardBasket";
 import { Modal } from "./components/View/Modal";
-import type { IProduct, IOrderData, IFormOrder, IFormContacts } from "./types";
+import type {
+  IProduct,
+  IOrderData,
+  IFormOrder,
+  IFormContacts,
+  TPayment,
+  IBuyer,
+} from "./types";
 import { Basket } from "./components/View/Basket";
 import { FormOrder } from "./components/View/FormOrder";
 import { FormContacts } from "./components/View/FormContacts";
@@ -39,8 +46,6 @@ const modal = new Modal(events, modalContainer!);
 
 const basketNode = cloneTemplate<HTMLElement>("#basket");
 const basket = new Basket(events, basketNode);
-
-let isBasketOpen = false;
 
 function updateBasketContent() {
   const items = cart.getItems();
@@ -129,19 +134,15 @@ events.on("preview:action", () => {
 });
 
 events.on("basket:open", () => {
-  isBasketOpen = true;
   updateBasketContent();
   modal.open(basket.render());
-});
-
-events.on("modal:close", () => {
-  isBasketOpen = false;
 });
 
 events.on("cart:changed", () => {
   header.counter = cart.getCount();
 
-  if (isBasketOpen) {
+  const basketElement = document.querySelector(".basket");
+  if (basketElement && basketElement.parentElement) {
     updateBasketContent();
   }
 });
@@ -149,6 +150,145 @@ events.on("cart:changed", () => {
 events.on<{ id: string }>("basket:remove", ({ id }) => {
   const product = catalog.getProductById(id);
   if (product) cart.removeItem(product);
+});
+
+events.on("order:next", () => {
+  const contactsNode = cloneTemplate<HTMLElement>("#contacts");
+  const contactsForm = new FormContacts(events, contactsNode);
+
+  contactsForm.email = "";
+  contactsForm.phone = "";
+
+  modal.open(contactsNode);
+});
+
+events.on("basket:checkout", () => {
+  buyer.clear();
+
+  const orderNode = cloneTemplate<HTMLElement>("#order");
+  const orderForm = new FormOrder(events, orderNode);
+
+  orderForm.address = "";
+  orderForm.payment = "" as TPayment;
+
+  modal.open(orderNode);
+});
+
+events.on("order:submit", () => {
+  const contactsNode = cloneTemplate<HTMLElement>("#contacts");
+  const contactsForm = new FormContacts(events, contactsNode);
+
+  const buyerData = buyer.getData();
+  contactsForm.email = buyerData.email || "";
+  contactsForm.phone = buyerData.phone || "";
+
+  modal.open(contactsNode);
+});
+
+const handleOrderSubmit = async () => {
+  events.off("contacts:submit", handleOrderSubmit);
+
+  const modalContent = document.querySelector(".modal__content");
+  const contactsFormElement = modalContent?.querySelector(
+    'form[name="contacts"]'
+  );
+
+  if (!contactsFormElement) {
+    events.on("contacts:submit", handleOrderSubmit);
+    return;
+  }
+
+  const contactsForm = new FormContacts(
+    events,
+    contactsFormElement as HTMLElement
+  );
+
+  contactsForm.valid = false;
+
+  const buyerData = buyer.getData();
+  const items = cart.getItems();
+
+  const orderData: IOrderData = {
+    payment: buyerData.payment,
+    address: buyerData.address,
+    email: buyerData.email,
+    phone: buyerData.phone,
+    items: items.map((item) => item.id),
+    total: cart.getTotal(),
+  };
+
+  try {
+    const result = await apiClient.createOrder(orderData);
+
+    cart.clear();
+    buyer.clear();
+
+    const successNode = cloneTemplate<HTMLElement>("#success");
+    const success = new Success(events, successNode);
+    success.total = result.total;
+
+    modal.open(successNode);
+  } catch (error) {
+    console.error("Ошибка при оформлении заказа:", error);
+  }
+};
+
+events.on("contacts:submit", handleOrderSubmit);
+
+events.on("form:change", (data: { field: string; value: string }) => {
+  const { field, value } = data;
+
+  const buyerFields: (keyof IBuyer)[] = [
+    "payment",
+    "address",
+    "email",
+    "phone",
+  ];
+
+  if (buyerFields.includes(field as keyof IBuyer)) {
+    buyer.setField(field as keyof IBuyer, value);
+  }
+
+  updateFormUI();
+});
+
+function updateFormUI() {
+  const modalContent = document.querySelector(".modal__content");
+  const currentForm = modalContent?.querySelector("form");
+
+  if (!currentForm) return;
+
+  const errors = buyer.validate();
+  const formName = currentForm.getAttribute("name");
+
+  if (formName === "order") {
+    const orderForm = new FormOrder(events, currentForm as HTMLElement);
+
+    const buyerData = buyer.getData();
+    orderForm.payment = buyerData.payment;
+
+    const orderErrors = [];
+    if (errors.payment) orderErrors.push(errors.payment);
+    if (errors.address) orderErrors.push(errors.address);
+
+    orderForm.errors = orderErrors;
+    orderForm.valid = orderErrors.length === 0;
+  }
+
+  if (formName === "contacts") {
+    const contactsForm = new FormContacts(events, currentForm as HTMLElement);
+
+    const contactsErrors = [];
+    if (errors.email) contactsErrors.push(errors.email);
+    if (errors.phone) contactsErrors.push(errors.phone);
+
+    contactsForm.errors = contactsErrors;
+    contactsForm.valid = contactsErrors.length === 0;
+  }
+}
+
+events.on("success:close", () => {
+  modal.close();
 });
 
 apiClient
